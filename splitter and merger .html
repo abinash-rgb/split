@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT File Splitter & Merger</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f8f9fa; }
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .btn-primary {
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-5">
+  <h2 class="text-center mb-4">📂 TXT File Splitter & Merger (Offline)</h2>
+  <div class="row g-4">
+
+    <!-- Split by Lines -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split by Lines per File</h4>
+        <input type="file" id="fileByLines" accept=".txt" class="form-control mb-3">
+        <input type="number" id="linesPerFile" class="form-control mb-3" value="200" min="1">
+        <button class="btn btn-primary w-100" onclick="splitByLines()">Split & Download</button>
+      </div>
+    </div>
+
+    <!-- Split by Number of Files -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split by Number of Files</h4>
+        <input type="file" id="fileByFiles" accept=".txt" class="form-control mb-3">
+        <input type="number" id="numFiles" class="form-control mb-3" value="3" min="2">
+        <button class="btn btn-primary w-100" onclick="splitByFiles()">Split & Download</button>
+      </div>
+    </div>
+
+    <!-- Merge Files -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Merge TXT Files</h4>
+        <input type="file" id="mergeFiles" accept=".txt" class="form-control mb-3" multiple>
+        <button class="btn btn-primary w-100" onclick="mergeFiles()">Merge & Download</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+function splitByLines() {
+  const fileInput = document.getElementById("fileByLines").files[0];
+  const linesPerFile = parseInt(document.getElementById("linesPerFile").value);
+
+  if (!fileInput) return alert("Please upload a file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/);
+    let fileIndex = 1;
+
+    for (let i = 0; i < lines.length; i += linesPerFile) {
+      const chunk = lines.slice(i, i + linesPerFile).join("\n");
+      downloadFile(`output_${fileIndex}.txt`, chunk);
+      fileIndex++;
+    }
+  };
+  reader.readAsText(fileInput);
+}
+
+function splitByFiles() {
+  const fileInput = document.getElementById("fileByFiles").files[0];
+  const numFiles = parseInt(document.getElementById("numFiles").value);
+
+  if (!fileInput) return alert("Please upload a file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/);
+    const linesPerFile = Math.ceil(lines.length / numFiles);
+
+    for (let i = 0; i < numFiles; i++) {
+      const chunk = lines.slice(i * linesPerFile, (i + 1) * linesPerFile).join("\n");
+      downloadFile(`output_${i + 1}.txt`, chunk);
+    }
+  };
+  reader.readAsText(fileInput);
+}
+
+function mergeFiles() {
+  const files = document.getElementById("mergeFiles").files;
+  if (files.length === 0) return alert("Please select files to merge");
+
+  let mergedContent = "";
+  let filesProcessed = 0;
+
+  Array.from(files).forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      mergedContent += e.target.result + "\n";
+      filesProcessed++;
+      if (filesProcessed === files.length) {
+        downloadFile("merged.txt", mergedContent.trim());
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+</script>
+</body>
+</html>
