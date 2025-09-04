@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TXT File Splitter & Merger</title>
+  <title>TXT & Excel Splitter / Merger / Converter</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { background: #f8f9fa; }
     .card {
@@ -20,35 +21,72 @@
 </head>
 <body>
 <div class="container py-5">
-  <h2 class="text-center mb-4">📂 TXT File Splitter & Merger (Offline)</h2>
+  <h2 class="text-center mb-4">📂 TXT & Excel Tool (Offline)</h2>
   <div class="row g-4">
 
-    <!-- Split by Lines -->
+    <!-- TXT Split by Lines -->
     <div class="col-md-4">
       <div class="card p-4">
-        <h4 class="mb-3">Split by Lines per File</h4>
+        <h4 class="mb-3">Split TXT by Lines</h4>
         <input type="file" id="fileByLines" accept=".txt" class="form-control mb-3">
         <input type="number" id="linesPerFile" class="form-control mb-3" value="200" min="1">
         <button class="btn btn-primary w-100" onclick="splitByLines()">Split & Download</button>
       </div>
     </div>
 
-    <!-- Split by Number of Files -->
+    <!-- TXT Split by Number of Files -->
     <div class="col-md-4">
       <div class="card p-4">
-        <h4 class="mb-3">Split by Number of Files</h4>
+        <h4 class="mb-3">Split TXT by Number of Files</h4>
         <input type="file" id="fileByFiles" accept=".txt" class="form-control mb-3">
         <input type="number" id="numFiles" class="form-control mb-3" value="3" min="2">
         <button class="btn btn-primary w-100" onclick="splitByFiles()">Split & Download</button>
       </div>
     </div>
 
-    <!-- Merge Files -->
+    <!-- TXT Merge -->
     <div class="col-md-4">
       <div class="card p-4">
         <h4 class="mb-3">Merge TXT Files</h4>
         <input type="file" id="mergeFiles" accept=".txt" class="form-control mb-3" multiple>
         <button class="btn btn-primary w-100" onclick="mergeFiles()">Merge & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel Split -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split Excel by Rows</h4>
+        <input type="file" id="excelFile" accept=".xlsx,.xls" class="form-control mb-3">
+        <input type="number" id="excelRows" class="form-control mb-3" value="200" min="1">
+        <button class="btn btn-primary w-100" onclick="splitExcel()">Split & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel Merge -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Merge Excel Files</h4>
+        <input type="file" id="mergeExcel" accept=".xlsx,.xls" class="form-control mb-3" multiple>
+        <button class="btn btn-primary w-100" onclick="mergeExcelFiles()">Merge & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel to TXT -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Convert Excel → TXT</h4>
+        <input type="file" id="excelToTxt" accept=".xlsx,.xls" class="form-control mb-3">
+        <button class="btn btn-primary w-100" onclick="convertExcelToTxt()">Convert & Download</button>
+      </div>
+    </div>
+
+    <!-- TXT to Excel -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Convert TXT → Excel</h4>
+        <input type="file" id="txtToExcel" accept=".txt" class="form-control mb-3">
+        <button class="btn btn-primary w-100" onclick="convertTxtToExcel()">Convert & Download</button>
       </div>
     </div>
 
@@ -64,17 +102,16 @@ function downloadFile(filename, content) {
   link.click();
 }
 
+// ---------------- TXT FUNCTIONS ----------------
 function splitByLines() {
   const fileInput = document.getElementById("fileByLines").files[0];
   const linesPerFile = parseInt(document.getElementById("linesPerFile").value);
-
   if (!fileInput) return alert("Please upload a file");
 
   const reader = new FileReader();
   reader.onload = function(e) {
     const lines = e.target.result.split(/\r?\n/);
     let fileIndex = 1;
-
     for (let i = 0; i < lines.length; i += linesPerFile) {
       const chunk = lines.slice(i, i + linesPerFile).join("\n");
       downloadFile(`output_${fileIndex}.txt`, chunk);
@@ -87,14 +124,12 @@ function splitByLines() {
 function splitByFiles() {
   const fileInput = document.getElementById("fileByFiles").files[0];
   const numFiles = parseInt(document.getElementById("numFiles").value);
-
   if (!fileInput) return alert("Please upload a file");
 
   const reader = new FileReader();
   reader.onload = function(e) {
     const lines = e.target.result.split(/\r?\n/);
     const linesPerFile = Math.ceil(lines.length / numFiles);
-
     for (let i = 0; i < numFiles; i++) {
       const chunk = lines.slice(i * linesPerFile, (i + 1) * linesPerFile).join("\n");
       downloadFile(`output_${i + 1}.txt`, chunk);
@@ -110,7 +145,7 @@ function mergeFiles() {
   let mergedContent = "";
   let filesProcessed = 0;
 
-  Array.from(files).forEach((file, index) => {
+  Array.from(files).forEach((file) => {
     const reader = new FileReader();
     reader.onload = function(e) {
       mergedContent += e.target.result + "\n";
@@ -122,7 +157,87 @@ function mergeFiles() {
     reader.readAsText(file);
   });
 }
+
+// ---------------- EXCEL FUNCTIONS ----------------
+function splitExcel() {
+  const fileInput = document.getElementById("excelFile").files[0];
+  const rowsPerFile = parseInt(document.getElementById("excelRows").value);
+  if (!fileInput) return alert("Please upload an Excel file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+
+    let fileIndex = 1;
+    for (let i = 0; i < sheet.length; i += rowsPerFile) {
+      const chunk = sheet.slice(i, i + rowsPerFile);
+      const newSheet = XLSX.utils.aoa_to_sheet(chunk);
+      const newWB = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
+      XLSX.writeFile(newWB, `output_${fileIndex}.xlsx`);
+      fileIndex++;
+    }
+  };
+  reader.readAsArrayBuffer(fileInput);
+}
+
+function mergeExcelFiles() {
+  const files = document.getElementById("mergeExcel").files;
+  if (files.length === 0) return alert("Please select Excel files to merge");
+
+  let mergedData = [];
+  let filesProcessed = 0;
+
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+      mergedData = mergedData.concat(sheet);
+      filesProcessed++;
+      if (filesProcessed === files.length) {
+        const newSheet = XLSX.utils.aoa_to_sheet(mergedData);
+        const newWB = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
+        XLSX.writeFile(newWB, "merged.xlsx");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function convertExcelToTxt() {
+  const fileInput = document.getElementById("excelToTxt").files[0];
+  if (!fileInput) return alert("Please upload an Excel file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+    const textData = sheet.map(row => row.join("\t")).join("\n");
+    downloadFile("converted.txt", textData);
+  };
+  reader.readAsArrayBuffer(fileInput);
+}
+
+function convertTxtToExcel() {
+  const fileInput = document.getElementById("txtToExcel").files[0];
+  if (!fileInput) return alert("Please upload a TXT file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).map(line => line.split(/\t|,/));
+    const newSheet = XLSX.utils.aoa_to_sheet(lines);
+    const newWB = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
+    XLSX.writeFile(newWB, "converted.xlsx");
+  };
+  reader.readAsText(fileInput);
+}
 </script>
 </body>
 </html>
-
