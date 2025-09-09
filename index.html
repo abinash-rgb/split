@@ -2,405 +2,242 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TXT & Excel Splitter / Merger / Converter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap 5 -->
+  <title>TXT & Excel Splitter / Merger / Converter</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome for icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- XLSX library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { 
-      background: linear-gradient(120deg, #f8f9fa 0%, #e2e6ea 100%);
-      min-height: 100vh;
-      font-family: 'Segoe UI', 'Arial', sans-serif;
+    body { background: #f8f9fa; }
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .header-icon {
-      font-size: 2.5rem;
-      color: #2471A3;
-    }
-    .tool-card {
-      border-radius: 18px;
-      box-shadow: 0 6px 24px rgba(52, 73, 94, 0.08);
-      border: none;
-      transition: transform .08s;
-      background: #fff;
-    }
-    .tool-card:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 8px 28px rgba(52, 73, 94, 0.12);
-    }
-    .icon-circle {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: linear-gradient(120deg, #AED6F1 40%, #D4E6F1 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px auto 5px;
-      font-size: 2rem;
-      color: #2471A3;
-    }
-    .btn-accent {
-      background: #2471A3;
-      border: none;
-      color: #fff;
+    .btn-primary {
       border-radius: 10px;
-      font-size: 1.1rem;
-      transition: background .15s;
-    }
-    .btn-accent:hover {
-      background: #154360;
-      color: #fff;
-    }
-    .progress {
-      height: 8px;
-      margin-bottom: 1rem;
-    }
-    .card-title {
-      min-height: 38px;
-    }
-    .tip {
-      cursor: pointer;
-      font-size: 1.05rem;
-      color: #5D6D7E;
-      transition: color 0.15s;
-    }
-    .tip:hover {
-      color: #154360;
-    }
-    .file-label {
-      font-size: 0.93rem;
-      color: #34495E;
-    }
-    .file-info {
-      font-size: 0.9rem;
-      color: #888;
-      margin-bottom: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="container py-4">
-    <div class="text-center mb-4">
-      <i class="fa-solid fa-layer-group header-icon"></i>
-      <h1 class="fw-bold mb-2">TXT & Excel Tool <small class="fs-5 text-muted">(Offline)</small></h1>
-      <p class="text-secondary mb-2">Split, merge, and convert files securely in your browser</p>
-    </div>
-    <div class="row g-4 justify-content-center">
+<div class="container py-5">
+  <h2 class="text-center mb-4">📂 TXT & Excel Tool (Offline)</h2>
+  <div class="row g-4">
 
-      <!-- TXT Split by Lines -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-scissors"></i></div>
-          <h4 class="card-title mb-2">Split TXT by Lines 
-            <span class="tip" title="Split a TXT file into several smaller files with a specific number of lines each."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose TXT file</label>
-          <input type="file" id="fileByLines" accept=".txt" class="form-control mb-2">
-          <label class="file-label mb-1">Lines per file</label>
-          <input type="number" id="linesPerFile" class="form-control mb-2" value="200" min="1">
-          <button class="btn btn-accent w-100 mb-2" onclick="splitByLines()">Split & Download</button>
-          <div id="infoByLines" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- TXT Split by Number of Files -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-share-nodes"></i></div>
-          <h4 class="card-title mb-2">Split TXT by File Count
-            <span class="tip" title="Split a TXT into a specific number of equally sized files."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose TXT file</label>
-          <input type="file" id="fileByFiles" accept=".txt" class="form-control mb-2">
-          <label class="file-label mb-1">Output files</label>
-          <input type="number" id="numFiles" class="form-control mb-2" value="3" min="2">
-          <button class="btn btn-accent w-100 mb-2" onclick="splitByFiles()">Split & Download</button>
-          <div id="infoByFiles" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- TXT Merge -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-file-lines"></i></div>
-          <h4 class="card-title mb-2">Merge TXT files 
-            <span class="tip" title="Merge multiple text files into one."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose text files</label>
-          <input type="file" id="mergeFiles" accept=".txt" class="form-control mb-2" multiple>
-          <button class="btn btn-accent w-100 mb-2" onclick="mergeFiles()">Merge & Download</button>
-          <div id="infoMergeTxt" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- Excel Split -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-table-columns"></i></div>
-          <h4 class="card-title mb-2">Split Excel by Rows 
-            <span class="tip" title="Split an Excel file into smaller Excel files by row count."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose Excel file</label>
-          <input type="file" id="excelFile" accept=".xlsx,.xls" class="form-control mb-2">
-          <label class="file-label mb-1">Rows per file</label>
-          <input type="number" id="excelRows" class="form-control mb-2" value="200" min="1">
-          <button class="btn btn-accent w-100 mb-2" onclick="splitExcel()">Split & Download</button>
-          <div id="infoSplitExcel" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- Excel Merge -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-table"></i></div>
-          <h4 class="card-title mb-2">Merge Excel files
-            <span class="tip" title="Merge multiple Excel files into one Excel workbook."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose Excel files</label>
-          <input type="file" id="mergeExcel" accept=".xlsx,.xls" class="form-control mb-2" multiple>
-          <button class="btn btn-accent w-100 mb-2" onclick="mergeExcelFiles()">Merge & Download</button>
-          <div id="infoMergeExcel" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- Excel to TXT -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
-          <h4 class="card-title mb-2">Excel <i class="fa fa-arrow-right"></i> TXT
-            <span class="tip" title="Convert an Excel sheet to plain text (tab separated)."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose Excel file</label>
-          <input type="file" id="excelToTxt" accept=".xlsx,.xls" class="form-control mb-2">
-          <button class="btn btn-accent w-100 mb-2" onclick="convertExcelToTxt()">Convert & Download</button>
-          <div id="infoExcelToTxt" class="file-info"></div>
-        </div>
-      </div>
-
-      <!-- TXT to Excel -->
-      <div class="col-md-4">
-        <div class="card tool-card p-4">
-          <div class="icon-circle"><i class="fa-solid fa-arrow-left-arrow-right"></i></div>
-          <h4 class="card-title mb-2">TXT <i class="fa fa-arrow-right"></i> Excel
-            <span class="tip" title="Convert tab- or comma-separated text to Excel."><i class="fa fa-question-circle"></i></span>
-          </h4>
-          <label class="file-label mb-1">Choose TXT file</label>
-          <input type="file" id="txtToExcel" accept=".txt" class="form-control mb-2">
-          <button class="btn btn-accent w-100 mb-2" onclick="convertTxtToExcel()">Convert & Download</button>
-          <div id="infoTxtToExcel" class="file-info"></div>
-        </div>
+    <!-- TXT Split by Lines -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split TXT by Lines</h4>
+        <input type="file" id="fileByLines" accept=".txt" class="form-control mb-3">
+        <input type="number" id="linesPerFile" class="form-control mb-3" value="200" min="1">
+        <button class="btn btn-primary w-100" onclick="splitByLines()">Split & Download</button>
       </div>
     </div>
-    <footer class="text-center pt-4 pb-2 text-muted small mt-4">
-      Made with <i class="fa fa-heart text-danger"></i> | 2025 TXT & Excel Tool | <a href="#" class="text-decoration-none text-primary">Help</a>
-    </footer>
+
+    <!-- TXT Split by Number of Files -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split TXT by Number of Files</h4>
+        <input type="file" id="fileByFiles" accept=".txt" class="form-control mb-3">
+        <input type="number" id="numFiles" class="form-control mb-3" value="3" min="2">
+        <button class="btn btn-primary w-100" onclick="splitByFiles()">Split & Download</button>
+      </div>
+    </div>
+
+    <!-- TXT Merge -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Merge TXT Files</h4>
+        <input type="file" id="mergeFiles" accept=".txt" class="form-control mb-3" multiple>
+        <button class="btn btn-primary w-100" onclick="mergeFiles()">Merge & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel Split -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Split Excel by Rows</h4>
+        <input type="file" id="excelFile" accept=".xlsx,.xls" class="form-control mb-3">
+        <input type="number" id="excelRows" class="form-control mb-3" value="200" min="1">
+        <button class="btn btn-primary w-100" onclick="splitExcel()">Split & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel Merge -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Merge Excel Files</h4>
+        <input type="file" id="mergeExcel" accept=".xlsx,.xls" class="form-control mb-3" multiple>
+        <button class="btn btn-primary w-100" onclick="mergeExcelFiles()">Merge & Download</button>
+      </div>
+    </div>
+
+    <!-- Excel to TXT -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Convert Excel → TXT</h4>
+        <input type="file" id="excelToTxt" accept=".xlsx,.xls" class="form-control mb-3">
+        <button class="btn btn-primary w-100" onclick="convertExcelToTxt()">Convert & Download</button>
+      </div>
+    </div>
+
+    <!-- TXT to Excel -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h4 class="mb-3">Convert TXT → Excel</h4>
+        <input type="file" id="txtToExcel" accept=".txt" class="form-control mb-3">
+        <button class="btn btn-primary w-100" onclick="convertTxtToExcel()">Convert & Download</button>
+      </div>
+    </div>
+
   </div>
-  <script>
-    // Helper: Display info
-    function showInfo(id, text) {
-      document.getElementById(id).textContent = text;
-    }
+</div>
 
-    // ---------------- TXT FUNCTIONS ----------------
-    function splitByLines() {
-      const fileInput = document.getElementById("fileByLines").files;
-      const linesPerFile = parseInt(document.getElementById("linesPerFile").value);
-      if (!fileInput) return showInfo("infoByLines", "⚠️ Please upload a file");
-      if (linesPerFile < 1) return showInfo("infoByLines", "⚠️ Lines per file must be at least 1");
-      showInfo("infoByLines", "Processing...");
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/);
-        let fileIndex = 1;
-        let promiseChain = Promise.resolve();
-        for (let i = 0; i < lines.length; i += linesPerFile) {
-          const chunk = lines.slice(i, i + linesPerFile).join("\n");
-          ((idx, chunkData) => {
-            promiseChain = promiseChain.then(() => downloadFileAsync(`output_${idx}.txt`, chunkData));
-          })(fileIndex, chunk);
-          fileIndex++;
-        }
-        promiseChain.then(() => showInfo("infoByLines", `✅ Done: ${fileIndex-1} files`));
-      };
-      reader.readAsText(fileInput);
-    }
+<script>
+function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
 
-    function splitByFiles() {
-      const fileInput = document.getElementById("fileByFiles").files;
-      const numFiles = parseInt(document.getElementById("numFiles").value);
-      if (!fileInput) return showInfo("infoByFiles", "⚠️ Please upload a file");
-      if (numFiles < 2) return showInfo("infoByFiles", "⚠️ Number of files must be at least 2");
-      showInfo("infoByFiles", "Processing...");
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/);
-        const linesPerFile = Math.ceil(lines.length / numFiles);
-        let promiseChain = Promise.resolve();
-        for (let i = 0; i < numFiles; i++) {
-          const chunk = lines.slice(i * linesPerFile, (i + 1) * linesPerFile).join("\n");
-          ((idx, chunkData) => {
-            promiseChain = promiseChain.then(() => downloadFileAsync(`output_${idx + 1}.txt`, chunkData));
-          })(i, chunk);
-        }
-        promiseChain.then(() => showInfo("infoByFiles", "✅ Done splitting"));
-      };
-      reader.readAsText(fileInput);
-    }
+// ---------------- TXT FUNCTIONS ----------------
+function splitByLines() {
+  const fileInput = document.getElementById("fileByLines").files[0];
+  const linesPerFile = parseInt(document.getElementById("linesPerFile").value);
+  if (!fileInput) return alert("Please upload a file");
 
-    function mergeFiles() {
-      const files = document.getElementById("mergeFiles").files;
-      if (files.length === 0) return showInfo("infoMergeTxt", "⚠️ Please select files");
-      showInfo("infoMergeTxt", "Merging...");
-      let mergedContent = "";
-      let filesProcessed = 0;
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          mergedContent += e.target.result + "\n";
-          filesProcessed++;
-          if (filesProcessed === files.length) {
-            downloadFile("merged.txt", mergedContent.trim());
-            showInfo("infoMergeTxt", "✅ Files merged!");
-          }
-        };
-        reader.readAsText(file);
-      });
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/);
+    let fileIndex = 1;
+    for (let i = 0; i < lines.length; i += linesPerFile) {
+      const chunk = lines.slice(i, i + linesPerFile).join("\n");
+      downloadFile(`output_${fileIndex}.txt`, chunk);
+      fileIndex++;
     }
+  };
+  reader.readAsText(fileInput);
+}
 
-    // ---------------- EXCEL FUNCTIONS ----------------
-    function splitExcel() {
-      const fileInput = document.getElementById("excelFile").files;
-      const rowsPerFile = parseInt(document.getElementById("excelRows").value);
-      if (!fileInput) return showInfo("infoSplitExcel", "⚠️ Please upload Excel file");
-      if (rowsPerFile < 1) return showInfo("infoSplitExcel", "⚠️ Rows per file must be at least 1");
-      showInfo("infoSplitExcel", "Processing...");
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames], { header: 1 });
-        let fileIndex = 1;
-        for (let i = 0; i < sheet.length; i += rowsPerFile) {
-          const chunk = sheet.slice(i, i + rowsPerFile);
-          const newSheet = XLSX.utils.aoa_to_sheet(chunk);
-          const newWB = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
-          XLSX.writeFile(newWB, `output_${fileIndex}.xlsx`);
-          fileIndex++;
-        }
-        showInfo("infoSplitExcel", `✅ Done: ${fileIndex-1} files`);
-      };
-      reader.readAsArrayBuffer(fileInput);
+function splitByFiles() {
+  const fileInput = document.getElementById("fileByFiles").files[0];
+  const numFiles = parseInt(document.getElementById("numFiles").value);
+  if (!fileInput) return alert("Please upload a file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/);
+    const linesPerFile = Math.ceil(lines.length / numFiles);
+    for (let i = 0; i < numFiles; i++) {
+      const chunk = lines.slice(i * linesPerFile, (i + 1) * linesPerFile).join("\n");
+      downloadFile(`output_${i + 1}.txt`, chunk);
     }
+  };
+  reader.readAsText(fileInput);
+}
 
-    function mergeExcelFiles() {
-      const files = document.getElementById("mergeExcel").files;
-      if (files.length === 0) return showInfo("infoMergeExcel", "⚠️ Select Excel files");
-      showInfo("infoMergeExcel", "Merging...");
-      let mergedData = [];
-      let filesProcessed = 0;
-      Array.from(files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames], { header: 1 });
-          mergedData = mergedData.concat(sheet);
-          filesProcessed++;
-          if (filesProcessed === files.length) {
-            const newSheet = XLSX.utils.aoa_to_sheet(mergedData);
-            const newWB = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
-            XLSX.writeFile(newWB, "merged.xlsx");
-            showInfo("infoMergeExcel", "✅ Merged!");
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      });
+function mergeFiles() {
+  const files = document.getElementById("mergeFiles").files;
+  if (files.length === 0) return alert("Please select files to merge");
+
+  let mergedContent = "";
+  let filesProcessed = 0;
+
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      mergedContent += e.target.result + "\n";
+      filesProcessed++;
+      if (filesProcessed === files.length) {
+        downloadFile("merged.txt", mergedContent.trim());
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+// ---------------- EXCEL FUNCTIONS ----------------
+function splitExcel() {
+  const fileInput = document.getElementById("excelFile").files[0];
+  const rowsPerFile = parseInt(document.getElementById("excelRows").value);
+  if (!fileInput) return alert("Please upload an Excel file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+
+    let fileIndex = 1;
+    for (let i = 0; i < sheet.length; i += rowsPerFile) {
+      const chunk = sheet.slice(i, i + rowsPerFile);
+      const newSheet = XLSX.utils.aoa_to_sheet(chunk);
+      const newWB = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
+      XLSX.writeFile(newWB, `output_${fileIndex}.xlsx`);
+      fileIndex++;
     }
+  };
+  reader.readAsArrayBuffer(fileInput);
+}
 
-    function convertExcelToTxt() {
-      const fileInput = document.getElementById("excelToTxt").files;
-      if (!fileInput) return showInfo("infoExcelToTxt", "⚠️ Please upload Excel file");
-      showInfo("infoExcelToTxt", "Converting...");
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames], { header: 1 });
-        const textData = sheet.map(row => row.join("\t")).join("\n");
-        downloadFile("converted.txt", textData);
-        showInfo("infoExcelToTxt", "✅ Converted!");
-      };
-      reader.readAsArrayBuffer(fileInput);
-    }
+function mergeExcelFiles() {
+  const files = document.getElementById("mergeExcel").files;
+  if (files.length === 0) return alert("Please select Excel files to merge");
 
-    function convertTxtToExcel() {
-      const fileInput = document.getElementById("txtToExcel").files;
-      if (!fileInput) return showInfo("infoTxtToExcel", "⚠️ Please upload TXT file");
-      showInfo("infoTxtToExcel", "Converting...");
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/).map(line => line.split(/\t|,/));
-        const newSheet = XLSX.utils.aoa_to_sheet(lines);
+  let mergedData = [];
+  let filesProcessed = 0;
+
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+      mergedData = mergedData.concat(sheet);
+      filesProcessed++;
+      if (filesProcessed === files.length) {
+        const newSheet = XLSX.utils.aoa_to_sheet(mergedData);
         const newWB = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
-        XLSX.writeFile(newWB, "converted.xlsx");
-        showInfo("infoTxtToExcel", "✅ Converted!");
-      };
-      reader.readAsText(fileInput);
-    }
+        XLSX.writeFile(newWB, "merged.xlsx");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
 
-    // Download helper that supports async file processing for fast repeat downloads
-    function downloadFileAsync(filename, content) {
-      return new Promise((resolve) => {
-        const blob = new Blob([content], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-          document.body.removeChild(link);
-          resolve();
-        }, 200);
-      });
-    }
-    function downloadFile(filename, content) {
-      const blob = new Blob([content], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => document.body.removeChild(link), 250);
-    }
+function convertExcelToTxt() {
+  const fileInput = document.getElementById("excelToTxt").files[0];
+  if (!fileInput) return alert("Please upload an Excel file");
 
-    // Show selected file info
-    [
-      ["fileByLines", "infoByLines"],
-      ["fileByFiles", "infoByFiles"],
-      ["mergeFiles", "infoMergeTxt"],
-      ["excelFile", "infoSplitExcel"],
-      ["mergeExcel", "infoMergeExcel"],
-      ["excelToTxt", "infoExcelToTxt"],
-      ["txtToExcel", "infoTxtToExcel"],
-    ].forEach(([inputId, infoId]) => {
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById(inputId)?.addEventListener("change", function() {
-          if (this.files && this.files.length > 0) {
-            const fileNames = Array.from(this.files).map(f => f.name).join(", ");
-            showInfo(infoId, `Selected: ${fileNames}`);
-          } else {
-            showInfo(infoId, "");
-          }
-        });
-      });
-    });
-  </script>
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+    const textData = sheet.map(row => row.join("\t")).join("\n");
+    downloadFile("converted.txt", textData);
+  };
+  reader.readAsArrayBuffer(fileInput);
+}
+
+function convertTxtToExcel() {
+  const fileInput = document.getElementById("txtToExcel").files[0];
+  if (!fileInput) return alert("Please upload a TXT file");
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).map(line => line.split(/\t|,/));
+    const newSheet = XLSX.utils.aoa_to_sheet(lines);
+    const newWB = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(newWB, newSheet, "Sheet1");
+    XLSX.writeFile(newWB, "converted.xlsx");
+  };
+  reader.readAsText(fileInput);
+}
+</script>
 </body>
 </html>
